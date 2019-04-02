@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="ZerGen">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="ZerGen">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>JavaScript事件流理解与分析 · fi3ework&#39;s Studio</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">ZerGen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">JavaScript事件流理解与分析</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">ZerGen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            JavaScript事件流理解与分析
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2.5k</span>阅读时长: <span class="post-count reading-time">10 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/04/02</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="事件流"><a href="#事件流" class="headerlink" title="事件流"></a>事件流</h2><p>事件流用简单的一句话描述就是：事件触发的顺序问题。可以先用一个简单的小例子直观的感受一下什么是事件流。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"wrapper"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"content"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> wrapperDom = <span class="built_in">document</span>.getElementById(<span class="string">"wrapper"</span>);</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> contentDom = <span class="built_in">document</span>.getElementById(<span class="string">"content"</span>);</span></span><br><span class="line"><span class="javascript">    wrapperDom.addEventListener(<span class="string">'click'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click wrapper"</span>);</span></span><br><span class="line"><span class="undefined">    &#125;);</span></span><br><span class="line"><span class="javascript">    contentDom.addEventListener(<span class="string">'click'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click content"</span>);</span></span><br><span class="line"><span class="undefined">    &#125;);</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后我们点里面的id为content的Div，目前我们共同的认知是 wrapper和content的点击事件都会触发，但是问题就在于是先触发外层的还是里层的呢？这就是JS的事件流问题，也就是刚才说的事件触发顺序问题。下面附上运行结果（点击content）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Output：click content</span><br><span class="line">        click wrapper</span><br></pre></td></tr></table></figure>
+<p>从运行的结果来看，content比wrapper先触发点击事件。</p>
+<h3 id="事件流历史"><a href="#事件流历史" class="headerlink" title="事件流历史"></a>事件流历史</h3><p>目前有两种事件流，一种是IE提出的<code>冒泡流</code>，还有一种是网景公司提出的<code>捕获流</code>，W3C统一后，JS同时支持这两种事件流，不过IE8及以下版本都只支持冒泡流，所以冒泡流更广为应用，为了更好地兼容低版本浏览器，建议使用冒泡流。</p>
+<h3 id="事件流分析"><a href="#事件流分析" class="headerlink" title="事件流分析"></a>事件流分析</h3><p>下图就对为什么上面的例子会先输出content后输出wrapper做了简单的演示：<br><img src="https://img-blog.csdnimg.cn/20181129095042551.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="事件流"><br>我们可以根据这个图来分析事件流的整个过程，首先事件流被分为了3个阶段，分别是：<code>捕获过程</code>、<code>目标过程</code>、<code>冒泡过程</code>。事件流从window开始，最后再window结束。<br>①1~5：这是<strong>捕获过程</strong>，字面意思就是去捕获我们的触发事件的DOM元素，按照上面的例子，也就是找到我们点击的contentDom。<br>②5~6：这是<strong>目标过程</strong>，也就是找到目标元素后，在这个阶段触发事件，这里也就是触发了contentDom的点击事件。<br>③6~10：这是<strong>冒泡过程</strong>，简单理解就是从目标元素一层一层往上询问，你是否要触发事件？如果要，则触发，最终回溯到window为止。<br>通过上面的分析，我们也就能够明白为什么之前的例子，会先触发content再触发wrapper了。<br><strong>但是！</strong> 并不是所有的情况都能按照我们想象的过程完美推进，这就要说到另外一个概念了，就是<code>DOM Level</code>，其实我们上面的例子是使用的<code>DOM Level2</code>，究竟什么是Dom Level？</p>
+<h3 id="DOM-Lelvel"><a href="#DOM-Lelvel" class="headerlink" title="DOM Lelvel"></a>DOM Lelvel</h3><p>先用一个表格简单了解下有哪些DOM Level：<br>| DOM Level | 捕获事件 | 冒泡事件|<br>|–|–|–|<br>|DOM Level 0  | 不支持 |支持 |<br>|DOM Level 2  | 支持 |支持|<br>|DOM Level 3  | 支持| 支持|<br>关于为什么没有DOM Level1？因为DOM Level1标准中并没有定义事件相关的内容，所以没有所谓的DOM Level1事件模型。<br><code>Dom Level 0</code> 与<code>Dom Level 2</code> 和 <code>Dom Level 3</code>最大的区别就在于Dom Level 0不支持在捕获阶段触发事件，仅支持在冒泡阶段触发。而Level2/3 都是同时支持两种的。</p>
+<h5 id="DOM-Level-0"><a href="#DOM-Level-0" class="headerlink" title="DOM Level 0"></a>DOM Level 0</h5><p>定义Level 0 的事件有两种形式，一种是直接<code>写在html标签中</code>，另一种是使用<code>onclick</code>这种方式：<br>方式1：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"wrapper"</span> <span class="attr">onclick</span>=<span class="string">"console.log(123);"</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>方式2：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">     <span class="keyword">var</span> wrapperDom = <span class="built_in">document</span>.getElementById(<span class="string">"wrapper"</span>);</span></span><br><span class="line"><span class="javascript">     wrapperDom.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">         <span class="built_in">console</span>.log(<span class="number">123</span>);</span></span><br><span class="line"><span class="undefined">     &#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>DOM Level 0 事件还有一个特点就是事件会被覆盖掉，什么意思呢，看下面的代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"wrapper"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"content"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">     <span class="keyword">var</span> wrapperDom = <span class="built_in">document</span>.getElementById(<span class="string">"wrapper"</span>);</span></span><br><span class="line"><span class="javascript">     wrapperDom.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">         <span class="built_in">console</span>.log(<span class="string">"click wrapper"</span>);</span></span><br><span class="line"><span class="undefined">     &#125;</span></span><br><span class="line"><span class="javascript">     wrapperDom.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">         <span class="built_in">console</span>.log(<span class="string">"click wrapper again"</span>);</span></span><br><span class="line"><span class="undefined">     &#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>按照我们的想象，应该会将两个事件同时输出，但是事实上只输出了后绑定的事件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Output：click wrapper again</span><br></pre></td></tr></table></figure>
+<p>所以，我们想要解除某个元素上绑定的事件，我们只需要这样做：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wrapperDom.onclick = <span class="literal">null</span>;</span><br></pre></td></tr></table></figure>
+<h5 id="DOM-Level-2"><a href="#DOM-Level-2" class="headerlink" title="DOM Level 2"></a>DOM Level 2</h5><p>DOM Level 2 既支持事件捕获也支持事件冒泡的，但是由于部分浏览器不支持事件捕获，所以还是尽量使用事件冒泡。DOM Level 2事件提供了两个方法供我们绑定和解绑：<code>addEventListener()</code>和<code>removeEventListener()</code>。并且Level2支持一个元素绑定多个事件，看下面代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"wrapper"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"content"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> wrapperDom = <span class="built_in">document</span>.getElementById(<span class="string">"wrapper"</span>);</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> contentDom = <span class="built_in">document</span>.getElementById(<span class="string">"content"</span>);</span></span><br><span class="line"><span class="javascript">    wrapperDom.addEventListener(<span class="string">'click'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click wrapper"</span>);</span></span><br><span class="line"><span class="undefined">    &#125;);</span></span><br><span class="line"><span class="javascript">    contentDom.addEventListener(<span class="string">'click'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click content"</span>);</span></span><br><span class="line"><span class="undefined">    &#125;);</span></span><br><span class="line"><span class="javascript">    contentDom.addEventListener(<span class="string">'click'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click content again"</span>);</span></span><br><span class="line"><span class="undefined">    &#125;);</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如上，我们给contentDom绑定了两个click事件，我们来看看输出结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Output：</span><br><span class="line">click content</span><br><span class="line">click content again</span><br><span class="line">click wrapper</span><br></pre></td></tr></table></figure>
+<p><code>addEventListener()</code>可以传入三个参数，分别是：<code>事件名</code>、<code>事件函数</code>、<code>是否使用捕获事件</code>。<br>第三个参数是一个布尔值，<code>true</code>代表选择捕获阶段触发事件，<code>false</code>则代表冒泡触发。<strong>第三个参数缺省是false</strong>。下面的代码就是使用捕获阶段触发：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"wrapper"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"content"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> wrapperDom = <span class="built_in">document</span>.getElementById(<span class="string">"wrapper"</span>);</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> contentDom = <span class="built_in">document</span>.getElementById(<span class="string">"content"</span>);</span></span><br><span class="line"><span class="javascript">    wrapperDom.addEventListener(<span class="string">'click'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click wrapper"</span>);</span></span><br><span class="line"><span class="javascript">    &#125;,<span class="literal">true</span>);</span></span><br><span class="line"><span class="javascript">    contentDom.addEventListener(<span class="string">'click'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click content"</span>);</span></span><br><span class="line"><span class="javascript">    &#125;,<span class="literal">true</span>);</span></span><br><span class="line"><span class="javascript">    contentDom.addEventListener(<span class="string">'click'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click content again"</span>);</span></span><br><span class="line"><span class="javascript">    &#125;,<span class="literal">true</span>);</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>再来看看输出结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Output：</span><br><span class="line">click wrapper</span><br><span class="line">click content</span><br><span class="line">click content again</span><br></pre></td></tr></table></figure>
+<p>看到输出结果我们便知，这些事件都是在捕获阶段就触发了。<br>然后，我们通过<code>addEventListener()</code>添加事件处理程序的程序只能使用<code>removeEventListener()</code>来移除。但是值得注意的是不能使用匿名函数来移除，否则是无效的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">wrapperDom.addEventListener(<span class="string">'click'</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"click wrapper"</span>);</span><br><span class="line">&#125;);</span><br><span class="line">wrapperDom.removeEventListener(<span class="string">"click"</span>,<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"click wrapper"</span>);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>这样子是无法移除这个事件的，点击之后依然会触发之前绑定的事件，我们需要如下这么做：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"click wrapper"</span>);</span><br><span class="line">&#125;</span><br><span class="line">wrapperDom.addEventListener(<span class="string">'click'</span>,handle);</span><br><span class="line">wrapperDom.removeEventListener(<span class="string">"click"</span>,handle);</span><br></pre></td></tr></table></figure>
+<p>这么做就可以成功的移除我们绑定的事件了。<br>值得注意的是：DOM Level 2在<strong>IE</strong>中的绑定事件是<code>attachEvent</code>，解除绑定是<code>detachEvent</code>,在标准的浏览器绑定事件是<code>addEventListener</code>，解除绑定是<code>removeEventListener</code>。</p>
+<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p>我们可以在控制台打印一个事件，这里我打印的是click的事件：<br><img src="https://img-blog.csdnimg.cn/20181129113915414.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="打印事件"><br>对标红的的属性做一些说明：<br>|属性名| 说明 |<br>|–|–|<br>| bubbles| 事件是否冒泡|<br>| cancelable|是否可以取消事件默认行为  |<br>| currentTarget|  当前正在处理事件的元素|<br>| defaultPrevented| 是否已经调用了preventDefault()方法 |<br>| detail| 事件相关的细节信息 |<br>| eventPhase| 表示事件处理阶段，1捕获阶段 2目标阶段 3冒泡阶段 |<br>| target| 事件的目标元素 |<br>| type|事件的类型  |<br>| view| 与事件关联的抽象视图, 相当于发生事件的window对象 |<br>还有几个重要的函数<br>|函数名|说明  |<br>|–|–|<br>| preventDefault() |  取消事件的默认行为|<br>| stopImmediatePropagation() |取消事件的进一步捕获或者冒泡, 同时阻止任何事件处理程序被调用|<br>| stopPropagation()| 取消事件的进一步捕获或者冒泡|</p>
+<h4 id="preventDefault"><a href="#preventDefault" class="headerlink" title="preventDefault()"></a>preventDefault()</h4><p>preventDefault()函数是用于阻止原标签事件触发的，示例代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"http://www.baidu.com"</span> <span class="attr">id</span>=<span class="string">"tag"</span>&gt;</span>跳转百度<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> tagDom = <span class="built_in">document</span>.getElementById(<span class="string">"tag"</span>);</span></span><br><span class="line"><span class="javascript">    tagDom.onclick = <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click a tag"</span>);</span></span><br><span class="line"><span class="undefined">        event.preventDefault();</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如果我们不使用<code>preventDefault()</code>方法，就会同时跳转到百度并打印内容，但是如果加上了这个方法，就只会打印不会跳转，也就是阻止了标签本身的一些事件。<br><strong>注意</strong> 在IE浏览器上面是event事件是没有preventDefault()这个属性的，所以在IE上，我们需要设置的属性是<code>returnValue</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.event.returnValue=<span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="stopPropagation"><a href="#stopPropagation" class="headerlink" title="stopPropagation()"></a>stopPropagation()</h4><p>这个方法还是非常常用的，适用于阻止事件冒泡的，实例代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"wrapper"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"content"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> wrapperDom = <span class="built_in">document</span>.getElementById(<span class="string">"wrapper"</span>);</span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> contentDom = <span class="built_in">document</span>.getElementById(<span class="string">"content"</span>);</span></span><br><span class="line"><span class="javascript">    wrapperDom.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click wrapper"</span>);</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="javascript">    contentDom.onclick = <span class="function"><span class="keyword">function</span>(<span class="params">event</span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">"click content"</span>);</span></span><br><span class="line"><span class="undefined">        event.stopPropagation();</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如果我们不使用<code>stopPropagation()</code>方法，就会依次输出click content、click wrapper，但是如果在contentDom的点击事件加上这个方法，就可以阻止事件继续往上冒泡，也就不会冒泡到wrapperDom上了。因此只会执行contentDom对应的事件。<br><strong>注意</strong> 在IE浏览器上面通过设置cancelBubble的值：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">event.cancelBubble=<span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="事件委托"><a href="#事件委托" class="headerlink" title="事件委托"></a>事件委托</h4><p>事件委托也叫事件代理，是一种前端性能优化的手段，其原理是利用了事件冒泡。举个简单的例子，我有下面这样一个DOM结构：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">li</span>&gt;</span>1<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">li</span>&gt;</span>2<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">li</span>&gt;</span>3<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">li</span>&gt;</span>4<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">li</span>&gt;</span>5<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">li</span>&gt;</span>6<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>按照我们之前的做法，我们应该要获取每一个li的Dom，然后分别绑定上事件，但是这么做会有大量的DOM的操作，是非常消耗性能的。那么根据之前的说法，我只需要给ul绑定上事件，每次点击li然后事件会冒泡到ul上，再执行ul绑定的事件。这样就大大减少了DOM操作。并且除了DOM操作，事件的绑定也是非常消耗性能的。直接看例子：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>1<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>2<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>3<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>4<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>5<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>6<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">    <span class="keyword">var</span> ulDom = <span class="built_in">document</span>.getElementsByTagName(<span class="string">"ul"</span>)[<span class="number">0</span>];</span></span><br><span class="line"><span class="javascript">　　    ulDom.onclick = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">　　　　<span class="keyword">var</span> e = e || <span class="built_in">window</span>.event;</span></span><br><span class="line"><span class="javascript">　　　　<span class="keyword">var</span> target = e.target || e.srcElement;  <span class="comment">//srcElement是IE的说法</span></span></span><br><span class="line"><span class="javascript">　　　　<span class="keyword">if</span>(target.nodeName.toLowerCase() == <span class="string">'li'</span>)&#123;</span></span><br><span class="line"><span class="javascript">　　　　    <span class="built_in">console</span>.log(target.innerHTML);</span></span><br><span class="line"><span class="undefined">　　　　&#125;</span></span><br><span class="line"><span class="undefined">　　&#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如果我们想给每个li执行不同的事件，我们可以给li加上id，通过id的判断去执行不同的事件。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://zergen.github.io">ZerGen</a>
+            </p><p>原文链接：<a href="https://zergen.github.io/2019/04/02/JavaScript事件流理解与分析/">https://zergen.github.io/2019/04/02/JavaScript事件流理解与分析/</a>
+            </p><p>发表日期：<a href="https://zergen.github.io/2019/04/02/JavaScript事件流理解与分析/">April 2nd 2019, 4:30:18 pm</a>
+            </p><p>更新日期：<a href="https://zergen.github.io/2019/04/02/JavaScript事件流理解与分析/">April 2nd 2019, 4:30:58 pm</a>
+            </p><p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2019/04/02/JavaScript原型、原型链以及继承总结/" title="JavaScript原型、原型链以及继承总结">
+                    <div class="nextTitle">JavaScript原型、原型链以及继承总结</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2019/04/02/JavaScript关于作用域、作用域链以及闭包的理解与应用/" title="JavaScript关于作用域、作用域链以及闭包的理解与应用">
+                    <div class="prevTitle">JavaScript关于作用域、作用域链以及闭包的理解与应用</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:m18111222611@163.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZerGen" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/example_qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#事件流"><span class="toc-number">1.</span> <span class="toc-text">事件流</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#事件流历史"><span class="toc-number">1.1.</span> <span class="toc-text">事件流历史</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事件流分析"><span class="toc-number">1.2.</span> <span class="toc-text">事件流分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DOM-Lelvel"><span class="toc-number">1.3.</span> <span class="toc-text">DOM Lelvel</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#DOM-Level-0"><span class="toc-number">1.3.0.1.</span> <span class="toc-text">DOM Level 0</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#DOM-Level-2"><span class="toc-number">1.3.0.2.</span> <span class="toc-text">DOM Level 2</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#扩展"><span class="toc-number">1.4.</span> <span class="toc-text">扩展</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#preventDefault"><span class="toc-number">1.4.1.</span> <span class="toc-text">preventDefault()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#stopPropagation"><span class="toc-number">1.4.2.</span> <span class="toc-text">stopPropagation()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#事件委托"><span class="toc-number">1.4.3.</span> <span class="toc-text">事件委托</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 6
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/React的虚拟DOM与diff算法的理解/">React的虚拟DOM与diff算法的理解</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/JavaScript原型、原型链以及继承总结/">JavaScript原型、原型链以及继承总结</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/JavaScript事件流理解与分析/">JavaScript事件流理解与分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href="/2019/04/02/AngularJS双向绑定背后的秘密/">AngularJS双向绑定背后的秘密</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href="/2019/04/02/JavaScript关于作用域、作用域链以及闭包的理解与应用/">JavaScript关于作用域、作用域链以及闭包的理解与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span><a class="archive-post-title" href="/2019/03/21/初探PWA/">初探PWA</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "ZerGen"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

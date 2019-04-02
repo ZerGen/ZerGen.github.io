@@ -346,6 +346,79 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2019/04/02/React的虚拟DOM与diff算法的理解/">
+            
+                <span>React的虚拟DOM与diff算法的理解</span>
+        </a>
+        <div class="abstract-content">
+            什么是虚拟DOM当我们更新了state中的值的时候，React会去调用render()方法来重新渲染整个组件的UI，但是如果我们真的去操作这么大量的DOM，显然性能是堪忧的。所以React实现了一个Virtual DOM，组件的真实DOM结构和Virtual DOM之间有一个映射的关系，React在虚拟DOM上实现了一个diff算法，当render()去重新渲染组件的时候，diff会找到需要变更的DOM，然后再把修改更新到浏览器上面的真实DOM上，所以，React并不是渲染了整个DOM树，Virtual DOM就是JS数据结构，所以比原生的DOM快得多。
+操作原生DOM慢？虚拟DOM快？...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/04/02</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href="/2019/04/02/JavaScript原型、原型链以及继承总结/">
+            
+                <span>JavaScript原型、原型链以及继承总结</span>
+        </a>
+        <div class="abstract-content">
+            写在前面JS的原型以及原型链的知识一直是JS中的一个难点和重点，想要学习好JS，必定要先翻过这座大山，本篇文章是对于该知识点的一个记录，方便自己回头翻阅。
+引用类型JavaScript中的数据类型分为基本数据类型以及引用类型，另一篇博客有讲到关于这方面的知识点。JavaScript的基本类型和对象引用总结了解了这些基础之后，我们要知道，引用类型除了对象之外，其实数组、函数都属于引用类型。他们都具有自由扩展性，也就是可以动态添加属性和方法。其实数组和函数本质上也是一种对象。这也是为什么说JS万物皆对象。
+普通对象和函数对象虽然JS万物皆对象，但是对象也是有区别的，分为普通对象和函数对象。这...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/04/02</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href="/2019/04/02/JavaScript事件流理解与分析/">
+            
+                <span>JavaScript事件流理解与分析</span>
+        </a>
+        <div class="abstract-content">
+            事件流事件流用简单的一句话描述就是：事件触发的顺序问题。可以先用一个简单的小例子直观的感受一下什么是事件流。
+12345678910111213&lt;div id="wrapper"&gt;    &lt;div id="content"&gt;&lt;/div&gt;&lt;/div&gt;&lt;script&gt;    var wrapperDom = document.getElementById("wrapper");    var contentDom = document.getElementById("content");    wrapperDom.addEvent...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/04/02</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2019/04/02/JavaScript关于作用域、作用域链以及闭包的理解与应用/">
             
                 <span>JavaScript关于作用域、作用域链以及闭包的理解与应用</span>
@@ -383,6 +456,30 @@ JS作用域关于JS变量的作用域无非就两种：全局变量以及局部�
             <!-- date  -->
             <div class="abstract-date">
                 <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/04/02</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href="/2019/03/21/初探PWA/">
+            
+                <span>初探PWA</span>
+        </a>
+        <div class="abstract-content">
+            背景近年来，虽然Web应用迎来了爆发式的发展，但是在移动端远远没有达到桌面设备的流行程度。尽管前端的许多技术和设计在应用性能上得到了很大的提升和突破，但是Web应用始终突破不了Web平台本身的一些限制：加载网页需要下载的延迟、依赖浏览器作为应用入口等等。尽管其实Web站和APP功能差不多，用户还是依然会去选择使用app，用户觉得APP不会出现白屏、并且功能入口都在桌面上。而web应用则是一个应用中的应用，而且加载的速度很慢。这个时候，PWA出现了，PWA的出现就是来对标原生应用的。
+PWA是什么PWA全称叫 Progressive Web App 即 渐进式Web应用，什么叫渐进式？我的...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/03/21</span>
             </div>
             <!-- tags  -->
             
@@ -504,9 +601,53 @@ JS作用域关于JS变量的作用域无非就两种：全局变量以及局部�
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 2
+        Total : 6
         </div>
         <!-- search  -->
         
@@ -516,6 +657,48 @@ JS作用域关于JS变量的作用域无非就两种：全局变量以及局部�
     
     
     
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/React的虚拟DOM与diff算法的理解/">React的虚拟DOM与diff算法的理解</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/JavaScript原型、原型链以及继承总结/">JavaScript原型、原型链以及继承总结</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/JavaScript事件流理解与分析/">JavaScript事件流理解与分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
@@ -528,6 +711,11 @@ JS作用域关于JS变量的作用域无非就两种：全局变量以及局部�
     
         <li class="archive-post-item">
             <span class="archive-post-date">04/02</span><a class="archive-post-title" href="/2019/04/02/JavaScript关于作用域、作用域链以及闭包的理解与应用/">JavaScript关于作用域、作用域链以及闭包的理解与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span><a class="archive-post-title" href="/2019/03/21/初探PWA/">初探PWA</a>
         </li>
     
     </ul></div>

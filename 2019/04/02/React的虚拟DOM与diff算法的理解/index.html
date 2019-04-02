@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="ZerGen">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="ZerGen">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>React的虚拟DOM与diff算法的理解 · fi3ework&#39;s Studio</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">ZerGen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">React的虚拟DOM与diff算法的理解</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">ZerGen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            React的虚拟DOM与diff算法的理解
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">3.9k</span>阅读时长: <span class="post-count reading-time">14 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/04/02</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="什么是虚拟DOM"><a href="#什么是虚拟DOM" class="headerlink" title="什么是虚拟DOM"></a>什么是虚拟DOM</h2><p>当我们更新了<code>state</code>中的值的时候，React会去调用<code>render()</code>方法来重新渲染整个组件的UI，但是如果我们真的去操作这么大量的DOM，显然性能是堪忧的。所以React实现了一个<code>Virtual DOM</code>，组件的<code>真实DOM结构</code>和<code>Virtual DOM</code>之间有一个映射的关系，React在虚拟DOM上实现了一个<code>diff</code>算法，当<code>render()</code>去重新渲染组件的时候，<code>diff</code>会找到需要变更的DOM，然后再把修改更新到浏览器上面的真实DOM上，所以，React并不是渲染了整个DOM树，<code>Virtual DOM</code>就是JS数据结构，所以比原生的DOM快得多。</p>
+<h2 id="操作原生DOM慢？虚拟DOM快？"><a href="#操作原生DOM慢？虚拟DOM快？" class="headerlink" title="操作原生DOM慢？虚拟DOM快？"></a>操作原生DOM慢？虚拟DOM快？</h2><p>DOM全称<code>文档对象模型</code>，本质也是一个JS对象，所以操作DOM对象其实也是很快的，慢就慢在操作了DOM对象之后，浏览器之后所做出的行为，比如布局<code>layout</code>、绘制<code>paint</code>。比如原生代码中，我们需要操作10个DOM，我们的理想状态是一次性构建出全部的DOM树，然后渲染，但是实际上，浏览器收到第一个DOM操作请求之后，它并不知道你后面还有9个操作，它就会走一遍完整的渲染流程，显然像计算元素坐标这些操作都是白白浪费的，因为下一次DOM操作可能会改变这些坐标，前面的计算就白费了。</p>
+<h5 id="原生DOM优化"><a href="#原生DOM优化" class="headerlink" title="原生DOM优化"></a>原生DOM优化</h5><p>我们想要去优化原生的DOM操作，其实是去试图减少<code>layout</code>的次数，我们唯一能想到可以减少<code>layout</code>次数的办法就是缓存我们的DOM操作：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//定义一个fragement容器</span></span><br><span class="line"><span class="keyword">var</span> fragment = <span class="built_in">document</span>.createDocumentFragment();  </span><br><span class="line"><span class="comment">//缓存所有的DOM操作</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">0</span>; i &lt; items.length; i++)&#123;</span><br><span class="line"> 		<span class="keyword">var</span> item = <span class="built_in">document</span>.createElement(<span class="string">"li"</span>);</span><br><span class="line"> 		item.innerText = items[i].data;</span><br><span class="line"> 		fragment.appendChild(item);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//一次性提交所有DOM操作</span></span><br><span class="line">list.appendChild(fragment);</span><br></pre></td></tr></table></figure>
+<p>除了这个方案，还有其他的方案，但是中心思想都是一样的，我们在一个不在<code>Render Tree</code>的元素统一操作，操作完之后，再把这个节点加入到<code>Render Tree</code>上，这样的效果就是无论多么复杂的DOM操作，最终都只会进行一次<code>layout</code>。</p>
+<h5 id="为什么使用-virtual-dom？"><a href="#为什么使用-virtual-dom？" class="headerlink" title="为什么使用 virtual dom？"></a>为什么使用 virtual dom？</h5><p>当然是因为<strong>方便</strong>了，因为这些优化，react内部是默认实施的，并且性能很优，不用我们每次都自己写一大堆缓存操作。框架的存在意义也就在于便于程序员开发嘛。并且这样，我们也更容易去维护我们的代码了。我们就可以欢快的敲代码了。<br><img src="https://img-blog.csdnimg.cn/20181212170511696.gif" alt="欢快敲代码"><br>所以总的来说，<code>virtual dom</code>比原生dom快，就它的<code>batching</code> 和和独特的 <code>diff</code>算法，<code>batching</code>就是把所有的DOM操作搜集起来，一次性提交给真实DOM，<code>diff</code>算法通过对比新旧虚拟DOM树，记录之间的差异。</p>
+<h5 id="virtual-dom-基本步骤"><a href="#virtual-dom-基本步骤" class="headerlink" title="virtual dom 基本步骤"></a>virtual dom 基本步骤</h5><p>①用JS对象构建一颗虚拟DOM树，然后用虚拟树构建一颗真实的DOM树，然后插入到文档中。<br>②当状态变更时，重新构造一颗新的对象树，然后新树旧树进行比较，记录两树差异。<br>③把步骤2的差异应用到步骤1所构建的真实DOM树上，视图就更新了。</p>
+<h2 id="diff算法"><a href="#diff算法" class="headerlink" title="diff算法"></a>diff算法</h2><p>其实React的 <code>virtual dom</code>的性能好也离不开它本身特殊的<code>diff</code>算法。传统的<code>diff</code>算法时间复杂度达到o(n^3^)，而react的<code>diff</code>算法时间复杂度只是o(n)，react的diff能减少到o(n)依靠的是<code>react diff</code>的三大策略。</p>
+<h5 id="传统diff-对比-react-diff"><a href="#传统diff-对比-react-diff" class="headerlink" title="传统diff 对比 react diff"></a>传统diff 对比 react diff</h5><p>传统的diff算法追求的是<code>“完全”</code>以及<code>“最小”</code>，而react diff则是放弃了这两种追求：<br>在传统的diff算法下，对比前后两个节点，如果发现节点改变了，会继续去比较节点的子节点，一层一层去对比。就这样循环递归去进行对比，复杂度就达到了o(n^3^)，n是树的节点数，想象一下如果这棵树有1000个节点，我们得执行上十亿次比较，这种量级的对比次数，时间基本要用秒来做计数单位了。那么react究竟是如何把复杂度降低到o(n)的呢？</p>
+<h5 id="React-diff-三大策略"><a href="#React-diff-三大策略" class="headerlink" title="React diff 三大策略"></a>React diff 三大策略</h5><p>策略一（tree diff）：Web UI中DOM节点跨层级的移动操作特别少，可以忽略不计。（DOM结构发生改变—–直接卸载并重新creat）<br>策略二（component diff）：DOM结构一样—–不会卸载,但是会update<br>策略三（element diff）：所有同一层级的子节点.他们都可以通过key来区分—–同时遵循1.2两点</p>
+<h5 id="虚拟DOM树分层比较（tree-diff）"><a href="#虚拟DOM树分层比较（tree-diff）" class="headerlink" title="虚拟DOM树分层比较（tree diff）"></a>虚拟DOM树分层比较（tree diff）</h5><p>两棵树只会对同一层次的节点进行比较，忽略DOM节点跨层级的移动操作。React只会对相同颜色方框内的DOM节点进行比较，即同一个父节点下的所有子节点。当发现节点已经不存在，则该节点及其子节点会被完全删除掉，不会用于进一步的比较。这样只需要对树进行一次遍历，便能完成整个DOM树的比较。由此一来，最直接的提升就是复杂度变为线型增长而不是原先的指数增长。<br><img src="https://img-blog.csdnimg.cn/20181213112349545.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="Diff"><br><strong>但是如果DOM节点出现了跨层级操作，diff会如何处理？</strong><br><img src="https://img-blog.csdnimg.cn/20181213135525217.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="跨层级移动节点"><br>就比如上图，<code>A</code>节点及其子节点进行移动挂到另一个DOM下时，React是不会机智的判断出子树仅仅是发生了移动，而是会直接销毁，并重新创建这个子树，然后再挂在到目标DOM上。实际上，React官方也并不推荐我们做出跨层级的<strong>骚操作</strong>。所以我们可以从中悟出一个道理：就是我们自己在实现组件的时候，一个稳定的DOM结构是有助于我们的性能提升的。</p>
+<h5 id="组件间的比较（component-diff）"><a href="#组件间的比较（component-diff）" class="headerlink" title="组件间的比较（component diff）"></a>组件间的比较（component diff）</h5><p>查阅的网上的很多资料，发现写的都比较难懂，根据我自己的理解，其实最核心的策略还是看结构是否发生改变。React是基于组件构建应用的，对于组件间的比较所采用的策略也是非常简洁和高效的。<br><strong>如果是同一个类型的组件</strong>，则按照原策略进行Virtual DOM比较。<br><strong>如果不是同一类型的组件</strong>，则将其判断为<code>dirty component</code>，从而替换整个组价下的所有子节点。<br><strong>如果是同一个类型的组件，有可能经过一轮Virtual DOM比较下来，并没有发生变化</strong>。如果我们能够提前确切知道这一点，那么就可以省下大量的diff运算时间。因此，React允许用户通过<code>shouldComponentUpdate()</code>来判断该组件是否需要进行diff算法分析。<br><img src="https://img-blog.csdnimg.cn/20181213152745415.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="组件对比"><br>如上图所示，当组件D变为组件G时，哪怕这两个组件结构相似，一旦React判断D和G是不用类型的组件，就不会比较两者的结构，而是直接删除组件D，重新创建组件G及其子节点。也就是说，如果当两个组件是不同类型但结构相似时，其实进行diff算法分析会影响性能，<strong>但是</strong>毕竟不同类型的组件存在相似DOM树的情况在实际开发过程中很少出现，因此这种极端因素很难在实际开发过程中造成重大影响。</p>
+<h5 id="元素间的比较（element-diff）"><a href="#元素间的比较（element-diff）" class="headerlink" title="元素间的比较（element diff）"></a>元素间的比较（element diff）</h5><p>当节点处于同一层级的时候，react diff 提供了三种节点操作：<strong>插入</strong>、<strong>删除</strong>、<strong>移动</strong>。<br>|操作|描述  |<br>|–|–|<br>| 插入 | 新节点不存在于老集合当中，即全新的节点，就会执行插入操作 |<br>| 移动 |  新节点在老集合中存在，并且只做了位置上的更新，就会复用之前的节点，做移动操作（依赖于Key）|<br>| 删除 |  新节点在老集合中存在，但节点做出了更改不能直接复用，做出删除操作|<br>简单先看个例子：<br><img src="https://img-blog.csdnimg.cn/2018121410462466.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="移除插入"><br>看上面的例子，得知，老集合包含节点 <strong>A</strong>、<strong>B</strong>、<strong>C</strong>、<strong>D</strong>，更新之后的新集合包括节点： <strong>B</strong>、<strong>A</strong>、<strong>D</strong>、<strong>C</strong>，然后<code>diff</code>算法对新老集合进行差异检测，发现B不等于A，然后就会创建B然后插入，并删除A节点，以此类推，创建并插入 <strong>A</strong>、<strong>D</strong>、<strong>C</strong>，然后移除<strong>B</strong>、<strong>C</strong>、<strong>D</strong>。<br>但是这些节点其实都没有发生改变，仅仅是位置上发生了变化，却要进行一大堆的繁琐低效的创建插入删除等操作，<strong>React说：“这样下去不行的，我们不如。。。”</strong>，于是React允许开发者对同一层级的同组子节点增加一个唯一的Key进行标识。</p>
+<h5 id="Key的作用"><a href="#Key的作用" class="headerlink" title="Key的作用"></a>Key的作用</h5><p>相信大部分刚开始接触react的时候，都看到过这样的警告：<br><img src="https://img-blog.csdnimg.cn/20181214112339595.png" alt="Key警告"><br>这是由于我们在循环渲染列表时候(map)时候忘记标记key值报的警告,既然是警告,就说明即使没有key的情况下也不会影响程序执行的正确性.其实这个key的存在与否只会影响<code>diff</code>算法的复杂度,也就是说你不加上Key就会像上面的例子一样暴力渲染，加了Key之后，React就可以做出移动的操作了，看例子：<br><img src="https://img-blog.csdnimg.cn/20181214112636330.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="加上Key"><br>和上面的例子是一样的，只不过每个节点都加上了唯一的key值，通过这个Key值发现新老集合里面其实全部都是相同的元素，只不过位置发生了改变。因此就无需进行节点的创建、插入、删除等操作了，只需要将老集合当中节点的位置进行移动就可以了。React给出的diff结果为：<strong>B</strong>、<strong>D</strong>不做操作，<strong>A</strong>、<strong>C</strong>进行移动操作。react是如何判断谁该移动，谁该不动的呢？</p>
+<h5 id="react源码逻辑梳理"><a href="#react源码逻辑梳理" class="headerlink" title="react源码逻辑梳理"></a>react源码逻辑梳理</h5><p>react会去循环整个新的集合：<br><strong>①</strong>从新集合中取到<code>B</code>，然后去旧集合中判断是否存在相同的<code>B</code>，确认<code>B</code>存在后，再去判断是否要移动：<br><code>B</code>在旧集合中的<code>index = 1</code>，有一个游标叫做<code>lastindex</code>。默认<code>lastindex = 0</code>，然后会把旧集合的<code>index</code>和游标作对比来判断是否需要移动，如果<code>index &lt;  lastindex</code> ，那么就做移动操作，在这里<code>B</code>的i<code>ndex = 1</code>，不满足于 <code>index &lt; lastindex</code>,所以就不做移动操作，然后游标<code>lastindex</code>更新，取<code>(index, lastindex)</code> 的较大值，这里就是<code>lastindex = 1</code></p>
+<p><strong>②</strong>然后遍历到<code>A</code>，<code>A</code>在老集合中的<code>index = 0</code>，此时的游标<code>lastindex = 1</code>，满足<code>index &lt; lastindex</code>，所以对<code>A</code>需要移动到对应的位置，此时<code>lastindex = max(index, lastindex) = 1</code></p>
+<p><strong>③</strong>然后遍历到<code>D</code>，<code>D</code>在老集合中的<code>index = 3</code>，此时游标<code>lastindex = 1</code>，不满足<code>index &lt; lastindex</code>，所以<code>D</code>保持不动。<code>lastindex = max(index, lastindex) = 3</code></p>
+<p><strong>④</strong>然后遍历到<code>C</code>，<code>C</code>在老集合中的<code>index = 2</code>，此时游标<code>lastindex = 3</code>，满足 <code>index &lt; lastindex</code>，所以<code>C</code>移动到对应位置。<code>C</code>之后没有节点了，<code>diff</code>就结束了</p>
+<p>以上主要分析新老集合中节点相同但位置不同的情景，仅对节点进行位置移动的情况，如果新集合中有新加入的节点且老集合存在需要删除的节点，那么 <code>React diff</code> 又是如何对比运作的呢？<br><img src="https://img-blog.csdnimg.cn/2018121414201566.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="既有删除，也有添加"><br>和第一种情景基本是一致的，react还是去循环整个新的集合：<br><strong>①</strong>不赘述了，和上面的第一步是一样的，<code>B</code>不做移动，<code>lastindex = 1</code></p>
+<p><strong>②</strong>新集合取得<code>E</code>，发现旧集合中不存在，则创建<code>E</code>并放在新集合对应的位置，<code>lastindex = 1</code></p>
+<p><strong>③</strong>遍历到<code>C</code>，不满足<code>index &lt; lastindex</code>，<code>C</code>不动，<code>lastindex = 2</code></p>
+<p><strong>④</strong>遍历到<code>A</code>，满足<code>index &lt; lastindex</code>，<code>A</code>移动到对应位置，<code>lastindex = 2</code></p>
+<p><strong>⑤</strong>当完成新集合中所有节点 <code>diff</code> 时，最后还需要对老集合进行循环遍历，判断是否存在新集合中没有但老集合中仍存在的节点，发现存在这样的节点 <code>D</code>，因此删除节点 <code>D</code>，到此 <code>diff</code> 全部完成</p>
+<p><strong>但是</strong> <code>react diff</code>也存在一些问题，和需要优化的地方，看下面的例子：<br><img src="https://img-blog.csdnimg.cn/20181214143232125.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="react-diff不足的地方"><br>在上面的这个例子，<strong>A</strong>、<strong>B</strong>、<strong>C</strong>、<strong>D</strong>都没有变化，仅仅是<code>D</code>的位置发生了改变。看上面的图我们就知道react并没有把<code>D</code>的位置移动到头部，而是把 <strong>A</strong>、<strong>B</strong>、<strong>C</strong>分别移动到<code>D</code>的后面了，通过前面的两个例子，我们也大概知道，为什么会发生这样的情况了：<br>因为<code>D</code>节点在老集合里面的<code>index</code> 是最大的，使得<strong>A</strong>、<strong>B</strong>、<strong>C</strong>三个节点都会 <code>index &lt;  lastindex</code>，从而导致<strong>A</strong>、<strong>B</strong>、<strong>C</strong>都会去做移动操作。所以在开发过程中，尽量减少类似将最后一个节点移动到列表首部的操作，当节点数量过大或更新操作过于频繁时，在一定程度上会影响 React 的渲染性能。</p>
+<h5 id="三句箴言"><a href="#三句箴言" class="headerlink" title="三句箴言"></a>三句箴言</h5><p>所以经过这么一分析<code>react diff</code>的三大策略，我们能够在开发中更加进一步的提高react的渲染效率。<br><strong>箴言一</strong>：在开发组件时，保持稳定的 DOM 结构会有助于性能的提升；<br><strong>箴言二</strong>：使用 <code>shouldComponentUpdate()</code>方法节省<code>diff</code>的开销<br><strong>箴言三</strong>：在开发过程中，尽量减少类似将最后一个节点移动到列表首部的操作，当节点数量过大或更新操作过于频繁时，在一定程度上会影响 React 的渲染性能。</p>
+<h5 id="为什么不推荐使用index作为Key"><a href="#为什么不推荐使用index作为Key" class="headerlink" title="为什么不推荐使用index作为Key"></a>为什么不推荐使用index作为Key</h5><p>我们再写react的时候，当我们做map循环的时候,当我们没有一个唯一id来标识每一项item的时候，我们可能会选择使用index，官网不推荐我们使用index作为key，通过上面的知识背景，我们其实可以知道为什么使用index会导致一些问题：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">data.map(<span class="function">(<span class="params">item, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">&#123;index&#125;</span>&gt;</span>&#123;item&#125;<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span> </span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>上面这样写会存在很大的坑，比如看下面的例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">Component</span></span>&#123;</span><br><span class="line">	<span class="keyword">constructor</span>(props) &#123;</span><br><span class="line">		<span class="keyword">super</span>(props)</span><br><span class="line">		<span class="keyword">this</span>.state = &#123;</span><br><span class="line">			list: [&#123;<span class="attr">id</span>: <span class="number">1</span>,<span class="attr">val</span>: <span class="string">'A'</span>&#125;, &#123;<span class="attr">id</span>: <span class="number">2</span>, <span class="attr">val</span>: <span class="string">'B'</span>&#125;, &#123;<span class="attr">id</span>: <span class="number">3</span>, <span class="attr">val</span>: <span class="string">'C'</span>&#125;]</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	click() &#123;</span><br><span class="line">		<span class="keyword">this</span>.state.list.reverse()</span><br><span class="line">		<span class="keyword">this</span>.setState(&#123;&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	render() &#123;</span><br><span class="line">		<span class="keyword">return</span> (</span><br><span class="line">            &lt;ul&gt;</span><br><span class="line">                &#123;</span><br><span class="line">                	<span class="keyword">this</span>.state.list.map(<span class="function">(<span class="params">item, index</span>) =&gt;</span> &#123;</span><br><span class="line">                        <span class="keyword">return</span> (</span><br><span class="line">                            &lt;Li key=&#123;index&#125; val=&#123;item.val&#125;&gt;<span class="xml"><span class="tag">&lt;/<span class="name">Li</span>&gt;</span></span></span><br><span class="line">                		)</span><br><span class="line">                    &#125;)</span><br><span class="line">                &#125;</span><br><span class="line">                 &lt;button onClick=&#123;<span class="keyword">this</span>.click.bind(<span class="keyword">this</span>)&#125;&gt;Reverse&lt;<span class="regexp">/button&gt;</span></span><br><span class="line"><span class="regexp">            &lt;/u</span>l&gt;</span><br><span class="line">		)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Li</span> <span class="keyword">extends</span> <span class="title">Component</span></span>&#123;</span><br><span class="line">	<span class="keyword">constructor</span>(props) &#123;</span><br><span class="line">		<span class="keyword">super</span>(props)</span><br><span class="line">	&#125;</span><br><span class="line">	componentDidMount() &#123;</span><br><span class="line">		<span class="built_in">console</span>.log(<span class="string">'===mount==='</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	componentWillUpdate() &#123;</span><br><span class="line">		<span class="built_in">console</span>.log(<span class="string">'===update===='</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	render() &#123;</span><br><span class="line">		<span class="keyword">return</span> (</span><br><span class="line">            &lt;li&gt;</span><br><span class="line">                &#123;<span class="keyword">this</span>.props.val&#125;</span><br><span class="line">                &lt;input type=<span class="string">"text"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">input</span>&gt;</span></span></span><br><span class="line">            &lt;<span class="regexp">/li&gt;</span></span><br><span class="line"><span class="regexp">		)</span></span><br><span class="line"><span class="regexp">	&#125;</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20181214170945721.png" alt="效果图"><br>我们在三个输入框里面，依次输入1，2，3，点击Reverse按钮，按照我们的预期，这时候页面应该渲染成3，2，1，但是实际上，顺序依然还是1，2，3，再看控制台里面，确实是打印了<code>===update===</code>，证明数据确实是更新了的。那么为什么会发生这种事情，我们可以分析一下：<br><img src="https://img-blog.csdnimg.cn/20181214171444391.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="反复分析"><br>我们可以看下这个图就明白了：<br><img src="https://img-blog.csdnimg.cn/20181214172434517.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="在"><br>就像我们之前所说，react会通过key去老集合中找，是否有相同的元素，react发现新老key都是一致的，他会认为是同一个组件，所以input框内的值没有倒叙。我们只需要乖乖的把<code>id</code>作为<code>key</code>，就可以解决这个现象了。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://zergen.github.io">ZerGen</a>
+            </p><p>原文链接：<a href="https://zergen.github.io/2019/04/02/React的虚拟DOM与diff算法的理解/">https://zergen.github.io/2019/04/02/React的虚拟DOM与diff算法的理解/</a>
+            </p><p>发表日期：<a href="https://zergen.github.io/2019/04/02/React的虚拟DOM与diff算法的理解/">April 2nd 2019, 4:32:10 pm</a>
+            </p><p>更新日期：<a href="https://zergen.github.io/2019/04/02/React的虚拟DOM与diff算法的理解/">April 2nd 2019, 4:32:39 pm</a>
+            </p><p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2019/04/02/JavaScript原型、原型链以及继承总结/" title="JavaScript原型、原型链以及继承总结">
+                    <div class="prevTitle">JavaScript原型、原型链以及继承总结</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:m18111222611@163.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZerGen" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/example_qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是虚拟DOM"><span class="toc-number">1.</span> <span class="toc-text">什么是虚拟DOM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#操作原生DOM慢？虚拟DOM快？"><span class="toc-number">2.</span> <span class="toc-text">操作原生DOM慢？虚拟DOM快？</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#原生DOM优化"><span class="toc-number">2.0.0.1.</span> <span class="toc-text">原生DOM优化</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#为什么使用-virtual-dom？"><span class="toc-number">2.0.0.2.</span> <span class="toc-text">为什么使用 virtual dom？</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#virtual-dom-基本步骤"><span class="toc-number">2.0.0.3.</span> <span class="toc-text">virtual dom 基本步骤</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#diff算法"><span class="toc-number">3.</span> <span class="toc-text">diff算法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#传统diff-对比-react-diff"><span class="toc-number">3.0.0.1.</span> <span class="toc-text">传统diff 对比 react diff</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#React-diff-三大策略"><span class="toc-number">3.0.0.2.</span> <span class="toc-text">React diff 三大策略</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#虚拟DOM树分层比较（tree-diff）"><span class="toc-number">3.0.0.3.</span> <span class="toc-text">虚拟DOM树分层比较（tree diff）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#组件间的比较（component-diff）"><span class="toc-number">3.0.0.4.</span> <span class="toc-text">组件间的比较（component diff）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#元素间的比较（element-diff）"><span class="toc-number">3.0.0.5.</span> <span class="toc-text">元素间的比较（element diff）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Key的作用"><span class="toc-number">3.0.0.6.</span> <span class="toc-text">Key的作用</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#react源码逻辑梳理"><span class="toc-number">3.0.0.7.</span> <span class="toc-text">react源码逻辑梳理</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#三句箴言"><span class="toc-number">3.0.0.8.</span> <span class="toc-text">三句箴言</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#为什么不推荐使用index作为Key"><span class="toc-number">3.0.0.9.</span> <span class="toc-text">为什么不推荐使用index作为Key</span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 6
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/React的虚拟DOM与diff算法的理解/">React的虚拟DOM与diff算法的理解</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/JavaScript原型、原型链以及继承总结/">JavaScript原型、原型链以及继承总结</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/JavaScript事件流理解与分析/">JavaScript事件流理解与分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href="/2019/04/02/AngularJS双向绑定背后的秘密/">AngularJS双向绑定背后的秘密</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href="/2019/04/02/JavaScript关于作用域、作用域链以及闭包的理解与应用/">JavaScript关于作用域、作用域链以及闭包的理解与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span><a class="archive-post-title" href="/2019/03/21/初探PWA/">初探PWA</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "ZerGen"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

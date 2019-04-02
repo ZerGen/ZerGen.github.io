@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="ZerGen">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="ZerGen">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content>
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>初探PWA · fi3ework&#39;s Studio</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">ZerGen&#39;s Blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">初探PWA</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">ZerGen's Blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            初探PWA
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">3.1k</span>阅读时长: <span class="post-count reading-time">13 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/03/21</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>近年来，虽然Web应用迎来了爆发式的发展，但是在移动端远远没有达到桌面设备的流行程度。尽管前端的许多技术和设计在应用性能上得到了很大的提升和突破，但是Web应用始终突破不了Web平台本身的一些限制：加载网页需要下载的延迟、依赖浏览器作为应用入口等等。<br><img src="https://img-blog.csdnimg.cn/20190315140618264.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="移动设备web和native使用时长对比"><br>尽管其实Web站和APP功能差不多，用户还是依然会去选择使用app，用户觉得APP不会出现<code>白屏</code>、并且功能入口都在桌面上。而web应用则是一个<code>应用中的应用</code>，而且加载的速度很慢。这个时候，PWA出现了，PWA的出现就是来对标原生应用的。</p>
+<h2 id="PWA是什么"><a href="#PWA是什么" class="headerlink" title="PWA是什么"></a>PWA是什么</h2><p>PWA全称叫 <strong>Progressive Web App</strong> 即 <strong>渐进式Web应用</strong>，什么叫渐进式？我的理解是你可以用它的一部分或者全部，或者全部不用，但是不会影响应用正常运行，也就是做到了<code>“全浏览器支持”</code>。我们可以大致总结为啥用户更加偏向于使用原生应用而不是网站：</p>
+<ul>
+<li>可靠</li>
+<li>启动快</li>
+<li>可见的主屏幕图标</li>
+<li>离线可使用</li>
+<li>推送可将用户带回应用</li>
+</ul>
+<p>那么PWA能给我们带来些什么？可以看看官方的描述：<br><img src="https://img-blog.csdnimg.cn/20190315144913196.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="Google对PWA的描述"><br>简单总结一下就是：<code>及时加载</code>、<code>快速响应</code>、<code>沉浸式体验</code>。</p>
+<h2 id="Service-Worker"><a href="#Service-Worker" class="headerlink" title="Service Worker"></a>Service Worker</h2><p>PWA应用之所以能够做到离线使用，靠的就是Service Worker，它可以选择性的缓存网站的部分资源以提供离线的使用。<br>Service Worker其实是在后台运行的Worker脚本，使用JS编写，我们可以用来拦截网络请求，处理推送消息和执行其他的许多任务。</p>
+<h4 id="Service-Worker-机制"><a href="#Service-Worker-机制" class="headerlink" title="Service Worker 机制"></a>Service Worker 机制</h4><p>Service Worker 就像是我们的应用和服务器之间的一个中间商，它可以全权控制网站发出的每一个请求。Service Worker有以下几个特点：</p>
+<ul>
+<li>运行在自己的全局脚本上下文中</li>
+<li>不绑定到具体网页</li>
+<li>无法修改网页中的元素，因为它无法访问DOM</li>
+<li>只能使用HTTPS<br><img src="https://img-blog.csdnimg.cn/20190317100810842.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="Service Worker 机制"></li>
+</ul>
+<p>因为Service Worker运行在worker上下文中，所以无法访问DOM，它与应用的主要JavaScript运行在不同的线程，所以不会被阻塞，是完全异步的。就像图中所示，Service Worker 可以全权控制应用中所有进出的网络请求。</p>
+<h4 id="Service-Worker-生命周期"><a href="#Service-Worker-生命周期" class="headerlink" title="Service Worker 生命周期"></a>Service Worker 生命周期</h4><p><img src="https://img-blog.csdnimg.cn/20190317103431253.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="Service Worker 生命周期"><br>当用户第一次导航到一个URL上时，服务器会返回响应网页，注册的时候会调用<code>register()函数</code>，此时Service Worker开始下载、解析并且执行。如果在这个期间出现任何错误，<code>register()</code>返回的<code>Promise</code>都会执行<code>reject</code>操作，然后Service Worker就会被废掉。一旦Service Worker成功执行了，安装事件就会激活(<code>service worker是基于事件的</code>)，意思就是可以进入所有事件中的任何一个。安装完成之后，Service Worker就会激活，如果生命周期内所有阶段都成功了，那么Service Worker便准备就绪了，待使用。<br>当第一次加载页面的时候，Service Worker还没有激活，所以它不会处理任何请求，也就是说只有刷新页面，Service Worker逻辑才会启动。</p>
+<h4 id="Service-Worker拦截HTTP请求"><a href="#Service-Worker拦截HTTP请求" class="headerlink" title="Service Worker拦截HTTP请求"></a>Service Worker拦截HTTP请求</h4><p>可以先检查一下当前浏览器是否支持Service Worker</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">    <span class="comment">//注册 Service Worker</span></span></span><br><span class="line"><span class="javascript">    <span class="keyword">if</span>(<span class="string">'serviceWorker'</span> <span class="keyword">in</span> navigator) &#123;</span></span><br><span class="line"><span class="javascript">        navigator.serviceWorker.register(<span class="string">'./ServiceWorker.js'</span>).then(<span class="function"><span class="params">registration</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">            <span class="built_in">console</span>.log(<span class="string">'注册成功'</span>, registration.scope);</span></span><br><span class="line"><span class="javascript">        &#125;).catch(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">            <span class="built_in">console</span>.log(<span class="string">'注册失败'</span>, err);</span></span><br><span class="line"><span class="undefined">        &#125;);</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>之前说过Service Worker是基于事件驱动的，它可以让我们监听不同的事件来控制我们的应用，比如Service Worker中一个很重要的事件是<code>fetch</code>事件，它可以拦截所有的HTTP请求，拦截后我们可以决定如何进行，意思就是我们可以把发出HTTP请求或者接收到的HTTP响应更改成任何内容：</p>
+<p><strong>ServiceWorker.js</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(<span class="string">'fetch'</span>, event =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span>(<span class="regexp">/login$/</span>.test(event.request.url)) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">"login API 捕获"</span>);</span><br><span class="line">        event.respondWith(fetch(<span class="string">'./mock/file.txt'</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><strong>index.html</strong><br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"pwaDiv"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined">   </span></span><br><span class="line"><span class="javascript">        <span class="comment">//注册 Service Worker</span></span></span><br><span class="line"><span class="javascript">        <span class="keyword">if</span>(<span class="string">'serviceWorker'</span> <span class="keyword">in</span> navigator) &#123;</span></span><br><span class="line"><span class="javascript">            navigator.serviceWorker.register(<span class="string">'./ServiceWorker.js'</span>).then(<span class="function"><span class="params">registration</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">                <span class="built_in">console</span>.log(<span class="string">'注册成功'</span>, registration.scope);</span></span><br><span class="line"><span class="javascript">            &#125;).catch(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">                <span class="built_in">console</span>.log(<span class="string">'注册失败'</span>, err);</span></span><br><span class="line"><span class="undefined">            &#125;);</span></span><br><span class="line"><span class="undefined">        &#125;</span></span><br><span class="line"><span class="javascript">        <span class="comment">//Ajax请求</span></span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> xhr = <span class="keyword">new</span> XMLHttpRequest();</span></span><br><span class="line"><span class="javascript">        xhr.open(<span class="string">'post'</span>, <span class="string">'http://www.mozotech.cn/bangbang/index/user/login'</span>);</span></span><br><span class="line"><span class="javascript">        xhr.setRequestHeader(<span class="string">"Content-type"</span>,<span class="string">"application/x-www-form-urlencoded"</span>);</span></span><br><span class="line"><span class="javascript">        xhr.send(<span class="string">'username=Lan&amp;password=123456'</span>);</span></span><br><span class="line"><span class="javascript">        xhr.onreadystatechange = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">            <span class="keyword">if</span> (xhr.readyState == <span class="number">4</span> &amp;&amp; xhr.status == <span class="number">200</span>) &#123;</span></span><br><span class="line"><span class="javascript">                <span class="keyword">var</span> pwaDiv = <span class="built_in">document</span>.querySelector(<span class="string">".pwaDiv"</span>);</span></span><br><span class="line"><span class="undefined">                pwaDiv.innerHTML = xhr.responseText;</span></span><br><span class="line"><span class="undefined">            &#125; </span></span><br><span class="line"><span class="undefined">        &#125;;</span></span><br><span class="line"><span class="undefined">    </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>上面的代码是监听了所有以<code>login</code>结尾的HTTP请求，会拦截此类请求，然后返回<code>/mock/file.txt</code>文件</p>
+<h4 id="Service-Worker-缓存"><a href="#Service-Worker-缓存" class="headerlink" title="Service Worker 缓存"></a>Service Worker 缓存</h4><p>Service Worker的缓存能力十分强大，他可以由我们精准的去控制如何缓存资源。除了上面说到的可以监听<code>fetch</code>事件，我们还可以监听<code>install</code>事件，install就是Service Worker的一个生命周期阶段(<code>浏览器安装并注册Service Worker的时候</code> )，这个时候是缓存资源的最佳时期。</p>
+<p><strong>ServiceWorker.js</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cacheName = <span class="string">'APPCache'</span>;</span><br><span class="line">self.addEventListener(<span class="string">'install'</span>, event =&gt; &#123;</span><br><span class="line">    event.waitUntil(</span><br><span class="line">        caches.open(cacheName).then(<span class="function"><span class="params">cache</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> cache.addAll([</span><br><span class="line">                <span class="string">'./serviceWorker.jpg'</span></span><br><span class="line">            ]);</span><br><span class="line">        &#125;)</span><br><span class="line">    );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><strong>index.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">"./serviceWorker.jpg"</span> &gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined">   </span></span><br><span class="line"><span class="javascript">       <span class="comment">//注册 Service Worker</span></span></span><br><span class="line"><span class="javascript">       <span class="keyword">if</span>(<span class="string">'serviceWorker'</span> <span class="keyword">in</span> navigator) &#123;</span></span><br><span class="line"><span class="javascript">           navigator.serviceWorker.register(<span class="string">'./ServiceWorker.js'</span>).then(<span class="function"><span class="params">registration</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">               <span class="built_in">console</span>.log(<span class="string">'注册成功'</span>, registration.scope);</span></span><br><span class="line"><span class="javascript">           &#125;).catch(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">               <span class="built_in">console</span>.log(<span class="string">'注册失败'</span>, err);</span></span><br><span class="line"><span class="undefined">           &#125;);</span></span><br><span class="line"><span class="undefined">       &#125;     </span></span><br><span class="line"><span class="undefined">   </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>上述代码在Service Worker的<code>install</code>阶段，将图片<code>serviceWorker.jpg</code>添加到了缓存当中，<code>cacheName</code>是用来标记缓存的名字，每个<code>cacheName</code>还可以拥有很多的版本，每一个cacheName对应一个唯一的缓存。<code>cache.addAll</code>传入的资源文件数组，如果所有的文件都缓存成功了，那么Service Worker也随之成功安装，如果任何一个文件缓存失败，Service Worker就会安装失败，所以不建议缓存太多的文件，以免增加Service Worker的安装失败的概率。</p>
+<p><strong>使用缓存文件(Service Worker.js)</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(<span class="string">'fetch'</span>, event =&gt; &#123;</span><br><span class="line">    event.respondWith(</span><br><span class="line">        caches.match(event.request).then(<span class="function"><span class="params">rs</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">if</span>(rs) &#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">"使用缓存"</span>);</span><br><span class="line">                <span class="keyword">return</span> rs;</span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> fetch(event.request);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">    )</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>我们监听<code>fetch</code>事件，然后使用caches.match()函数来检查传入的URL是否匹配当前缓存中存在的内容。如果匹配到了，那么直接返回缓存的资源，如果未匹配到，则按照往常的一样进行网络请求来获取资源。</p>
+<h4 id="App-Shell-模型"><a href="#App-Shell-模型" class="headerlink" title="App Shell 模型"></a>App Shell 模型</h4><p>Web应用与原生应用给人第一感觉的差距就在于原生应用哪怕在没有网络的情况下，依然不会出现完全白屏的情况，而是展示出一个大概的框架，只是空出动态的内容部分，并且还会给出Loading的提示。但是Web应用一旦离开网络，要不是完全白屏，要不就是小恐龙界面，这两种用户体验是差距非常大的。原生应用是纯天然支持App Shell模型的，所以我们可以在第一次进入网站的时候，把应用的主题框架先缓存起来，在无网络的情况下，使用缓存的资源，这样就达到了和原生应用一样的效果了。</p>
+<p><strong>index.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span>&gt;</span>APP Header<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined">   </span></span><br><span class="line"><span class="javascript">    <span class="comment">//注册 Service Worker</span></span></span><br><span class="line"><span class="javascript">    <span class="keyword">if</span>(<span class="string">'serviceWorker'</span> <span class="keyword">in</span> navigator) &#123;</span></span><br><span class="line"><span class="javascript">        navigator.serviceWorker.register(<span class="string">'./ServiceWorker.js'</span>).then(<span class="function"><span class="params">registration</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">            <span class="built_in">console</span>.log(<span class="string">'注册成功'</span>, registration.scope);</span></span><br><span class="line"><span class="javascript">        &#125;).catch(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span></span><br><span class="line"><span class="javascript">            <span class="built_in">console</span>.log(<span class="string">'注册失败'</span>, err);</span></span><br><span class="line"><span class="undefined">        &#125;);</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined"> </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p><strong>Service Worker.js</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cacheName = <span class="string">'ShellCache'</span>;</span><br><span class="line">self.addEventListener(<span class="string">'install'</span>, event =&gt; &#123;</span><br><span class="line">    event.waitUntil(</span><br><span class="line">        caches.open(cacheName).then(<span class="function"><span class="params">cache</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> cache.addAll([</span><br><span class="line">                <span class="string">'./index.html'</span></span><br><span class="line">            ]);</span><br><span class="line">        &#125;)</span><br><span class="line">    );</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">self.addEventListener(<span class="string">'fetch'</span>, event =&gt; &#123;</span><br><span class="line">    event.respondWith(</span><br><span class="line">        caches.match(event.request).then(<span class="function"><span class="params">rs</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">if</span>(rs) &#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">"使用缓存"</span>);</span><br><span class="line">                <span class="keyword">return</span> rs;</span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> fetch(event.request);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">    )</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>在这种做了缓存的情况下，我们可以看下第一次和第二次打开网页的速度比对情况：<br><img src="https://img-blog.csdnimg.cn/20190320155501503.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="第一次和第二次速度对比"></p>
+<h4 id="处理带参请求"><a href="#处理带参请求" class="headerlink" title="处理带参请求"></a>处理带参请求</h4><p>Service Worker在匹配缓存资源的时候，是将请求的URL去匹配缓存的URL，需要完全匹配上才会去使用缓存资源，默认是包括额外的参数的。可以使用<code>ignoreSearch</code>来配置忽略额外的参数：</p>
+<p><strong>Service Worker.js</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(<span class="string">'fetch'</span>, event =&gt; &#123;</span><br><span class="line">    event.respondWith(</span><br><span class="line">        caches.match(event.request, &#123;</span><br><span class="line">            ignoreSearch: <span class="literal">true</span></span><br><span class="line">        &#125;).then(<span class="function"><span class="params">rs</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">if</span>(rs) &#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">"使用缓存"</span>);</span><br><span class="line">                <span class="keyword">return</span> rs;</span><br><span class="line">            &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> fetch(event.request);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">    )</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h4 id="webp的使用"><a href="#webp的使用" class="headerlink" title="webp的使用"></a>webp的使用</h4><p>任何支持Webp格式图片的浏览器HTTP请求上都会加上<code>accetp: image/webp</code>的请求头，来告知服务端Webp的支持情况。我们恰好可以使用Service Worker来配合使用。</p>
+<p><strong>Service Worker.js</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(<span class="string">'fetch'</span>, event =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span>(<span class="regexp">/\.jpg$/</span>.test(event.request.url)) &#123;</span><br><span class="line">        <span class="keyword">var</span> supportWebp = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span>(event.request.headers.has(<span class="string">'accept'</span>)) &#123;</span><br><span class="line">            supportWebp = event.request.headers.get(<span class="string">'accept'</span>).includes(<span class="string">'webp'</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(supportWebp) &#123;</span><br><span class="line">            <span class="keyword">var</span> req = event.request.clone();</span><br><span class="line">            <span class="keyword">var</span> returnUrl = req.url.substr(<span class="number">0</span>, req.url.lastIndexOf(<span class="string">'.'</span>)) + <span class="string">'.webp'</span>;</span><br><span class="line">            <span class="built_in">console</span>.log(returnUrl);</span><br><span class="line">            event.respondWith(</span><br><span class="line">                fetch(returnUrl, &#123;</span><br><span class="line">                    mode: <span class="string">'no-cors'</span></span><br><span class="line">                &#125;)</span><br><span class="line">            );</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h2 id="PWA观感"><a href="#PWA观感" class="headerlink" title="PWA观感"></a>PWA观感</h2><p>PWA应用除了能够利用Service Worker来达到各种骚操作之外，还可以让Web应用长得更像原生应用，其中包含将站点添加到主屏幕和各种定制化。</p>
+<h4 id="Web应用清单"><a href="#Web应用清单" class="headerlink" title="Web应用清单"></a>Web应用清单</h4><p>Web应用清单就是一个简单的JSON配置文件，可以通过配置这个JSON文件来定制应用的各种信息，包括<code>应用名称</code>、<code>作者信息</code>、<code>应用描述</code>、<code>应用图标</code>等等。</p>
+<p><strong>manifist.json</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"PWA Web App"</span>,</span><br><span class="line">    <span class="attr">"short_name"</span>: <span class="string">"Lan PWA"</span>,</span><br><span class="line">    <span class="attr">"start_url"</span>: <span class="string">"./index.html"</span>,</span><br><span class="line">    <span class="attr">"display"</span>: <span class="string">"standalone"</span>,</span><br><span class="line">    <span class="attr">"theme_color"</span>: <span class="string">"#FFDF00"</span>,</span><br><span class="line">    <span class="attr">"background_color"</span>: <span class="string">"#FFDF00"</span>,</span><br><span class="line">    <span class="attr">"icons"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"src"</span>: <span class="string">"homescreen.png"</span>,</span><br><span class="line">            <span class="attr">"sizes"</span>: <span class="string">"192x192"</span>,</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"image/png"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"src"</span>: <span class="string">"homescreen-144.png"</span>,</span><br><span class="line">            <span class="attr">"sizes"</span>: <span class="string">"144x144"</span>,</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"image/png"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>name</strong>： 提示用户安装应用时出现的文本</li>
+<li><strong>short_name</strong>：安装后主屏幕应用的文本</li>
+<li><strong>start_url</strong>：从主屏幕开启web应用所出现的第一个页面。</li>
+<li><p><strong>dispaly</strong>：应用如何向用户展示，分别为<code>fullscreen</code>、<code>standalone</code>、<code>minimal-ui</code>和<code>browser</code>。</p>
+<p>  -<code>fullscreen</code>: 全屏显示，会尽可能将所有的显示区域都占满；<br>  -<code>standalone</code>: 独立应用模式，这种模式下打开的应用有自己的启动图标，并且不会有浏览器的地址栏。因此看起来更像一个Native App；<br>  -<code>minimal-ui</code>: 与standalone相比，该模式会多出地址栏；<br>  -<code>browser</code>: 一般来说，会和正常使用浏览器打开样式一致。</p>
+</li>
+<li><p><strong>theme_color</strong>：对浏览器地址栏进行着色</p>
+</li>
+<li><p><strong>icons</strong>：添加到主屏幕上时应用显示的图标</p>
+<p>保存到桌面后再启动，会有一个类似于原生应用的开屏图，是由<code>background_color</code> + <code>icons</code> 组成</p>
+<p>想让配置文件生效，只需要在html中link该文件就可以了</p>
+</li>
+</ul>
+<p><strong>index.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE html&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">"viewport"</span> <span class="attr">content</span>=<span class="string">"width=device-width, initial-scale=1.0"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"X-UA-Compatible"</span> <span class="attr">content</span>=<span class="string">"ie=edge"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"manifest"</span> <span class="attr">href</span>=<span class="string">"./manifest.json"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>Manifest<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello PWA<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>但是很不幸的是。IOS系统对manifest支持性并不是很友好：<br><img src="https://img-blog.csdnimg.cn/20190321114604594.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM2NDA3ODc1,size_16,color_FFFFFF,t_70" alt="Manifest IOS"><br>不幸中的万幸，还是有一些补救的办法的</p>
+<h4 id="IOS-Safiri-中的处理方式"><a href="#IOS-Safiri-中的处理方式" class="headerlink" title="IOS(Safiri)中的处理方式"></a>IOS(Safiri)中的处理方式</h4><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">"apple-mobile-web-app-capable"</span> <span class="attr">content</span>=<span class="string">"yes"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">"apple-mobile-web-app-status-bar-style"</span> <span class="attr">content</span>=<span class="string">"default"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">"apple-mobile-web-app-title"</span> <span class="attr">content</span>=<span class="string">"图书搜索"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"apple-touch-icon"</span> <span class="attr">href</span>=<span class="string">"img/icons/book-256.png"</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>apple-mobile-web-app-capable</code>: 类似于manifest里面的display，将content设置为yes就是standalone模式</li>
+<li><code>apple-mobile-web-app-status-bar-style</code>:  可以改变iOS移动设备的状态栏的样式，并且只有在standalone模式中才会有效果</li>
+<li><code>apple-mobile-web-app-title</code> 应用的标题</li>
+<li><p><code>apple-touch-icon</code>: 应用的图标</p>
+<h2 id="离线使用"><a href="#离线使用" class="headerlink" title="离线使用"></a>离线使用</h2><p>为了不让我们的PWA应用在离线的时候给用户呈现<code>白屏</code>、<code>无法访问</code>、<code>小恐龙</code>等页面，我们可以给应用提供离线的页面以供无网络状态下来展示。</p>
+</li>
+</ul>
+<p><strong>Service Worker.js</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span>  cacheName = <span class="string">'offline-cache1'</span>;</span><br><span class="line"><span class="keyword">const</span> offlineUrl = <span class="string">'./offline-page.html'</span>;</span><br><span class="line">self.addEventListener(<span class="string">'install'</span>, event =&gt; &#123;</span><br><span class="line">    event.waitUntil(</span><br><span class="line">        caches.open(cacheName).then(<span class="function"><span class="params">cache</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> cache.addAll([</span><br><span class="line">                offlineUrl</span><br><span class="line">            ]);</span><br><span class="line">        &#125;)</span><br><span class="line">    );</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">self.addEventListener(<span class="string">'fetch'</span>, event =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span>(event.request.method === <span class="string">'GET'</span> &amp;&amp; event.request.headers.get(<span class="string">'accept'</span>).includes(<span class="string">'text/html'</span>)) &#123;</span><br><span class="line">        event.respondWith(</span><br><span class="line">            fetch(event.request.url).catch(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> caches.match(offlineUrl);</span><br><span class="line">            &#125;)</span><br><span class="line">        )</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><code>offline-page.html</code>是我们提前准备好的离线显示的页面。监听<code>fetch</code>事件来判断用户的请求，如果请求页面失败了，我们就可以返回给用户我们提前准备好的页面。</p>
+<h2 id="未完待续"><a href="#未完待续" class="headerlink" title="未完待续"></a>未完待续</h2><ul>
+<li><strong>PWA推送功能</strong></li>
+<li><strong>Web Stream</strong></li>
+<li><strong>……</strong></li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://zergen.github.io">ZerGen</a>
+            </p><p>原文链接：<a href="https://zergen.github.io/2019/03/21/初探PWA/">https://zergen.github.io/2019/03/21/初探PWA/</a>
+            </p><p>发表日期：<a href="https://zergen.github.io/2019/03/21/初探PWA/">March 21st 2019, 4:28:47 pm</a>
+            </p><p>更新日期：<a href="https://zergen.github.io/2019/03/21/初探PWA/">April 2nd 2019, 4:33:29 pm</a>
+            </p><p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2019/04/02/AngularJS双向绑定背后的秘密/" title="AngularJS双向绑定背后的秘密">
+                    <div class="nextTitle">AngularJS双向绑定背后的秘密</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:m18111222611@163.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZerGen" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/example_qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PWA是什么"><span class="toc-number">2.</span> <span class="toc-text">PWA是什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Service-Worker"><span class="toc-number">3.</span> <span class="toc-text">Service Worker</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Service-Worker-机制"><span class="toc-number">3.0.1.</span> <span class="toc-text">Service Worker 机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Service-Worker-生命周期"><span class="toc-number">3.0.2.</span> <span class="toc-text">Service Worker 生命周期</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Service-Worker拦截HTTP请求"><span class="toc-number">3.0.3.</span> <span class="toc-text">Service Worker拦截HTTP请求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Service-Worker-缓存"><span class="toc-number">3.0.4.</span> <span class="toc-text">Service Worker 缓存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#App-Shell-模型"><span class="toc-number">3.0.5.</span> <span class="toc-text">App Shell 模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#处理带参请求"><span class="toc-number">3.0.6.</span> <span class="toc-text">处理带参请求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#webp的使用"><span class="toc-number">3.0.7.</span> <span class="toc-text">webp的使用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PWA观感"><span class="toc-number">4.</span> <span class="toc-text">PWA观感</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Web应用清单"><span class="toc-number">4.0.1.</span> <span class="toc-text">Web应用清单</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IOS-Safiri-中的处理方式"><span class="toc-number">4.0.2.</span> <span class="toc-text">IOS(Safiri)中的处理方式</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#离线使用"><span class="toc-number">5.</span> <span class="toc-text">离线使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#未完待续"><span class="toc-number">6.</span> <span class="toc-text">未完待续</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 6
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/React的虚拟DOM与diff算法的理解/">React的虚拟DOM与diff算法的理解</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/JavaScript原型、原型链以及继承总结/">JavaScript原型、原型链以及继承总结</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> Invalid date </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">Invalid date</span><a class="archive-post-title" href="/2019/04/02/JavaScript事件流理解与分析/">JavaScript事件流理解与分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href="/2019/04/02/AngularJS双向绑定背后的秘密/">AngularJS双向绑定背后的秘密</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href="/2019/04/02/JavaScript关于作用域、作用域链以及闭包的理解与应用/">JavaScript关于作用域、作用域链以及闭包的理解与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span><a class="archive-post-title" href="/2019/03/21/初探PWA/">初探PWA</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "ZerGen"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
